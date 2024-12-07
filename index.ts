@@ -3,7 +3,8 @@ import cors = require('cors')
 import dotenv from 'dotenv' 
 import router from './app/routes/index'
 import {MainController as main} from './app/controllers/index'
-import { RedisController as redis } from './app/controllers/'
+import { RedisController as redis } from './app/controllers/redis'
+
 
 /* test emails classes */
 //import {__email, do_mail} from './app/scripts/mailer'
@@ -27,7 +28,6 @@ const port = process.env.PORT || 3000
 
 app.use('/api', router)
 app.get("/", main.home) //welcome message
-
 
 /* @@ init app listen @@ */
 app.listen(3000, '0.0.0.0', () => {

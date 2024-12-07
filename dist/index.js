@@ -23,7 +23,6 @@ app.use(express_1.default.urlencoded({ extended: true }));
 const port = process.env.PORT || 3000;
 app.use('/api', index_1.default);
 app.get("/", index_2.MainController.home); //welcome message
-console.log(result); // >>> bar
 /* @@ init app listen @@ */
 app.listen(3000, '0.0.0.0', () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);
