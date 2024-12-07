@@ -1,4 +1,3 @@
-import { Model } from '../models/index'
 //import Response from 'express';
 import {__email as msg, do_mail as mailer} from '../scripts/mailer'
 import { MailMessage } from '../interfaces/MailerModel'
