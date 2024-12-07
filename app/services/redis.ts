@@ -5,6 +5,7 @@ let client: RedisClientType
 
 
 export const redisConnect = async () => {
+    
     if (!client) {
         client = createClient({
             username: process.env.REDIS_USERNAME,
