@@ -31,7 +31,7 @@ app.use(express.urlencoded({ extended: true }))
 
 
 /* @@ define application port @@ */
-const port = process.env.PORT
+const port = process.env.PORT || 3000
 
 /* @@ init router @@ */
 app.use('/api', router)
@@ -39,7 +39,7 @@ app.get("/", main.home) //welcome message
 
 
 /* @@ init app listen @@ */
-app.listen(port, () => {
+app.listen(3000, '0.0.0.0', () => {
   console.log(`[server]: Server is running at http://localhost:${port}`)
 })
 
