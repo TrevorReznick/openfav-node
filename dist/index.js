@@ -17,24 +17,15 @@ const app = (0, express_1.default)();
 const corsOptions = {
     origin: '*'
 };
-/*
-if (process.env.NODE_ENV == 'production') {
-  corsOptions.origin = process.env.API_URL_PROD
-} else {
-  corsOptions.origin = process.env.API_URL_DEV
-}
-*/
 app.use(cors(corsOptions));
-/* @@ set application/x-www-form-urlencoded @@ */
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-/* @@ define application port @@ */
-const port = process.env.PORT;
-/* @@ init router @@ */
+const port = process.env.PORT || 3000;
 app.use('/api', index_1.default);
 app.get("/", index_2.MainController.home); //welcome message
+console.log(result); // >>> bar
 /* @@ init app listen @@ */
-app.listen(port, () => {
+app.listen(3000, '0.0.0.0', () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);
 });
 //do_mail(__email)

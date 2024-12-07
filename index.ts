@@ -3,6 +3,7 @@ import cors = require('cors')
 import dotenv from 'dotenv' 
 import router from './app/routes/index'
 import {MainController as main} from './app/controllers/index'
+import { RedisController as redis } from './app/controllers/'
 
 /* test emails classes */
 //import {__email, do_mail} from './app/scripts/mailer'
@@ -16,24 +17,14 @@ const app: Express = express()
 const corsOptions = {
   origin: '*'
 }
-/*
-if (process.env.NODE_ENV == 'production') {
-  corsOptions.origin = process.env.API_URL_PROD
-} else {
-  corsOptions.origin = process.env.API_URL_DEV
-} 
-*/ 
+
 app.use(cors(corsOptions))
 
-/* @@ set application/x-www-form-urlencoded @@ */
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-
-/* @@ define application port @@ */
 const port = process.env.PORT || 3000
 
-/* @@ init router @@ */
 app.use('/api', router)
 app.get("/", main.home) //welcome message
 
