@@ -30,7 +30,9 @@ app.use(express.urlencoded({ extended: true }))
 const port = process.env.PORT || 3000
 
 app.use('/api', router)
+app.use('/images', express.static('/app/images'))
 app.get("/", main.home) //welcome message
+
 
 /* @@ init app listen @@ */
 app.listen(3000, '0.0.0.0', () => {
