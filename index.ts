@@ -3,6 +3,9 @@ import cors = require('cors')
 import dotenv from 'dotenv' 
 import router from './app/routes/index'
 import {MainController as main} from './app/controllers/index'
+const multer = require('multer')
+const path = require('path')
+const fs = require('fs')
 import { RedisController as redis } from './app/controllers/redis'
 
 
