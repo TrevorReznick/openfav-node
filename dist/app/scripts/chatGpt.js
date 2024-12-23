@@ -8,12 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.doChat = void 0;
-const axios_1 = __importDefault(require("axios"));
+const axios = require('axios');
 function doChat(msgObj) {
     return __awaiter(this, void 0, void 0, function* () {
         // Assicurati che msgObj contenga un array di oggetti con le proprietà 'role' e 'message'
@@ -39,7 +36,7 @@ function doChat(msgObj) {
             stop: [' User:', ' AI:'],
         });
         try {
-            const req = axios_1.default.post(API_URL, data, {
+            const req = axios.post(API_URL, data, {
                 headers,
                 responseType: "json",
             });

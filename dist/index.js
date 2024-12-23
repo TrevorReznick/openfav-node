@@ -8,6 +8,9 @@ const cors = require("cors");
 const dotenv_1 = __importDefault(require("dotenv"));
 const index_1 = __importDefault(require("./app/routes/index"));
 const index_2 = require("./app/controllers/index");
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 /* test emails classes */
 //import {__email, do_mail} from './app/scripts/mailer'
 dotenv_1.default.config();
@@ -22,6 +25,7 @@ app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 const port = process.env.PORT || 3000;
 app.use('/api', index_1.default);
+app.use('/images', express_1.default.static('/app/images'));
 app.get("/", index_2.MainController.home); //welcome message
 /* @@ init app listen @@ */
 app.listen(3000, '0.0.0.0', () => {

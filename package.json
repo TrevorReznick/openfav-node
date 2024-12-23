@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/axios": "^0.14.4",
     "@types/nodemailer": "^6.4.14",
     "autoprefixer": "^10.4.13",
     "cors": "^2.8.5",

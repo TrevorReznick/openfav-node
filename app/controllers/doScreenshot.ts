@@ -31,7 +31,7 @@ const captureScreenshot = async (req: Request, res: Response) => {
     const imageBuffer = Buffer.from(imageData, 'base64');
 
     // Definisci il percorso di salvataggio dell'immagine
-    const destination = '/app/images';
+    const destination = '/images'
     const filename = Date.now() + '.png';
     const imagePath = path.join(destination, filename);
 
