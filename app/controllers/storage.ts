@@ -1,18 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const multer = require('multer')
-
-export interface UploadedFile {
-    fieldname: string;
-    originalname: string;
-    encoding: string;
-    mimetype: string;
-    size: number;
-    destination: string;
-    filename: string;
-    path: string;
-    buffer: Buffer;
-}
+import {UploadedFile} from '../interfaces/Upload'
 
 const storage = multer.diskStorage({
     destination: function (req: any, file: any, cb: any) {
