@@ -1,7 +1,6 @@
 //import Response from 'express';
 import {__email as msg, do_mail as mailer} from '../scripts/mailer'
 import { MailMessage } from '../interfaces/MailerModel'
-import { doChat } from '../scripts/chatGpt'
 import { RequestById,  RequestMail, Response} from '../interfaces/ResponsesRequests'
 
 
@@ -53,21 +52,7 @@ export class MainController {
         } catch(err) {
             res.status(500).send(err)
         }
-    }   
-
-
-    static async doGptChat(req: any, res: Response) {
-
-        const msg: any = req.body        
-
-        try {
-            let message = await doChat(msg)
-            console.log(message)
-            res.send(message)
-        } catch(e) {
-            res.status(500).send(e)
-        }
-    }
+    }    
 
 }
 
