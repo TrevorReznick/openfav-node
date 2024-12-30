@@ -9,6 +9,8 @@ const controllers_1 = require("../controllers");
 const redis_1 = require("../controllers/redis");
 const storage_1 = require("../controllers/storage");
 const my_controller_1 = require("../controllers/my_controller");
+const my_controllerV0_1 = require("../controllers/my_controllerV0");
+const my_controllerV1_1 = require("../controllers/my_controllerV1");
 const router = express_1.default.Router();
 router.get('/', controllers_1.MainController.home);
 router.get('/test-api', controllers_1.MainController.testApi);
@@ -19,4 +21,7 @@ router.post('/upload', storage_1.upload.single('image'), storage_1.uploadImage);
 /* @@ new routes @@ */
 router.get('/test-redis', redis_1.RedisController.home);
 router.post('/test-controller', my_controller_1.SubController.home);
+router.post('/test-gradio', my_controller_1.SubController.testGradio);
+router.post('/test-gradioV0', my_controllerV0_1.gradioController.generateImage);
+router.post('/test-gradioV1', my_controllerV1_1.gradioController.generateImage);
 exports.default = router;
