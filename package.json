@@ -20,6 +20,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "gpt3-tokenizer": "^1.1.5",
+    "gradio-client-lite": "^0.1.1",
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.7",

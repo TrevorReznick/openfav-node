@@ -18,5 +18,5 @@ router.post('/upload', storage_1.upload.single('image'), storage_1.uploadImage);
 //router.post('/screenshot', captureScreenshot)
 /* @@ new routes @@ */
 router.get('/test-redis', redis_1.RedisController.home);
-router.post('/do-chat', my_controller_1.SubController.doGptChat);
+router.post('/test-controller', my_controller_1.SubController.home);
 exports.default = router;

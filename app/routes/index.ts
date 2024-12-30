@@ -17,7 +17,7 @@ router.post('/upload', upload.single('image'), uploadImage)
 
 /* @@ new routes @@ */
 router.get('/test-redis', redis.home)
-router.post('/do-chat', sub.doGptChat)
+router.post('/test-controller', sub.home)
 
 
 export default router
