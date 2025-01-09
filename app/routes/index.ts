@@ -30,8 +30,6 @@ router.post('/test-gradio', sub.testGradio)
 router.post('/test-gradioV0', gradio.generateImage)
 router.post('/test-gradioV1', gradio1.generateImage)
 */
-
-
 export default router
 
 
