@@ -32,7 +32,7 @@ export class RedisController {
       await setRedisValue(`access_token_${accessToken}`, JSON.stringify({ userId }))
       await setRedisValue(`refresh_token_${refreshToken}`, JSON.stringify({ userId }))
   
-      res.send(`Tokens set successfully for user ${userId}`)
+      res.send({'message': `Tokens set successfully for user ${userId}`})
 
     } catch (error) {
       console.log('Error setting tokens:', error)
@@ -65,6 +65,8 @@ export class RedisController {
   }
   
   static getRefreshToken = async (req: Request, res: Response) => {
+
+    await redisConnect()
 
     try {
       const { refreshToken } = req.params
