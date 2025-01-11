@@ -41,23 +41,26 @@ export class RedisController {
   }
   
   static getAccessToken = async (req: Request, res: Response) => {
+
+    await redisConnect()
+
     try {
-      const { accessToken } = req.params;
+      const { accessToken } = req.params
   
       if (!accessToken) {
-        return res.status(400).send('Access Token is required');
+        return res.status(400).send('Access Token is required')
       }
   
-      const accessTokenData = await getRedisValue(`access_token_${accessToken}`);
+      const accessTokenData = await getRedisValue(`access_token_${accessToken}`)
   
       if (!accessTokenData) {
-        return res.status(404).send('Access Token not found');
+        return res.status(404).send('Access Token not found')
       }
   
-      res.send(JSON.parse(accessTokenData));
+      res.send(JSON.parse(accessTokenData))
     } catch (error) {
       console.log('Error getting access token:', error)
-      res.status(500).send('Internal Server Error');
+      res.status(500).send('Internal Server Error')
     }
   }
   
