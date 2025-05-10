@@ -12,7 +12,7 @@ export const redisConnect = async () => {
             password: process.env.REDIS_PASSWORD,
             socket: {
                 host: process.env.REDIS_SOCKET_HOST,
-                port: 13458
+                port: 11789
             }
         })
 
@@ -45,3 +45,29 @@ export const disconnectRedis = async () => {
         console.log('Redis client disconnected');
     }
 }
+
+/*
+export const setRedisValue = async (key, value, expiration = 3600) => {
+  return new Promise((resolve, reject) => {
+    client.setex(key, expiration, value, (err, reply) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(reply);
+      }
+    });
+  });
+};
+
+export const getRedisValue = async (key) => {
+  return new Promise((resolve, reject) => {
+    client.get(key, (err, reply) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(reply);
+      }
+    });
+  });
+};
+*/

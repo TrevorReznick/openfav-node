@@ -2,11 +2,9 @@ import express, { Express, Request, Response } from 'express'
 import cors = require('cors')
 import dotenv from 'dotenv' 
 import router from './app/routes/index'
+const sseRoutes = require('./app/routes/sse')
+
 import {MainController as main} from './app/controllers/index'
-const multer = require('multer')
-const path = require('path')
-const fs = require('fs')
-import { RedisController as redis } from './app/controllers/redis'
 
 
 /* test emails classes */
@@ -32,6 +30,9 @@ const port = process.env.PORT || 3000
 app.use('/api', router)
 app.use('/images', express.static('/app/images'))
 app.get("/", main.home) //welcome message
+
+// Route SSE
+app.use('/stream', sseRoutes)
 
 
 /* @@ init app listen @@ */
