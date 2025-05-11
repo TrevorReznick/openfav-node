@@ -22,11 +22,12 @@ router.post('/upload', upload.single('image'), uploadImage)
 
 /* @@ new routes @@ */
 router.get('/test-redis', redis.home)
+
+router.post('/test-controller', sub.home)
+/*
 router.post('/tokens', redis.setTokens)
 router.get('/tokens/access/:accessToken', redis.getAccessToken)
 router.get('/tokens/refresh/:refreshToken', redis.getRefreshToken)
-router.post('/test-controller', sub.home)
-/*
 router.post('/test-gradio', sub.testGradio)
 router.post('/test-gradioV0', gradio.generateImage)
 router.post('/test-gradioV1', gradio1.generateImage)

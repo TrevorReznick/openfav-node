@@ -1,4 +1,5 @@
 import { Redis } from '@upstash/redis'
+import { UserSession } from '../types/types'
 
 let client: Redis | null = null
 
