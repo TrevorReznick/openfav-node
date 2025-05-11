@@ -1,9 +1,10 @@
 import express from 'express'
 //import { Request, Response} from 'express'
-import { MainController as main} from '../controllers'
-import { RedisController as redis } from '../controllers/redis'
+import { MainController as main } from '../controllers'
+//import { RedisController as redis } from '../controllers/redis'
 import { upload, uploadImage } from '../controllers/storage'
-import {SubController as sub} from '../controllers/my_controller'
+import { SubController as sub } from '../controllers/my_controller'
+import { RedisController as redis } from '../controllers/upstash_redis'
 /*
 import {gradioController as gradio} from '../controllers/my_controllerV0'
 import {gradioController as gradio1} from '../controllers/my_controllerV2'
