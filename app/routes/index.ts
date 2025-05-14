@@ -18,13 +18,15 @@ router.get('/test-api', main.testApi)
 router.get('/test-mail', main.testMailer)
 router.post('/send-email', main.sendMail as any)
 router.post('/upload', upload.single('image'), uploadImage)
-//router.post('/screenshot', captureScreenshot)
+router.post('/set-session', redis.saveUserSession)
+router.get('/session/:userId', redis.getUserSession)
 
 /* @@ new routes @@ */
 router.get('/test-redis', redis.home)
 
 router.post('/test-controller', sub.home)
 /*
+router.post('/screenshot', captureScreenshot)
 router.post('/tokens', redis.setTokens)
 router.get('/tokens/access/:accessToken', redis.getAccessToken)
 router.get('/tokens/refresh/:refreshToken', redis.getRefreshToken)
