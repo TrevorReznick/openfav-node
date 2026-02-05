@@ -1,4 +1,5 @@
 import {MessageType} from '../types/types'
+import {PageSessionData} from '../types/types'
 import Response from 'express'
 
 /* @@ request interfaces @@ */
@@ -32,4 +33,17 @@ export interface RequestEvent<
         Record<string, string>> = Partial<Record<string, string>>,
         RouteId extends string | null = string | null
     > {}
+
+// Interfacce per risposte Redis
+export interface RedisResponse {
+    success?: boolean;
+    id?: string;
+    active?: boolean;
+    session?: any; // UserSession
+    error?: string;
+}
+
+export interface PageSessionResponse extends RedisResponse {
+    data?: PageSessionData;
+}
 

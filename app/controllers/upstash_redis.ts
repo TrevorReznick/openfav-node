@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { UserSession } from '../types/types'
+import { UserSession, PageSessionData } from '../types/types'
 import { getRedisValue, setRedisValue, redisConnect, disconnectRedis } from '../services/upstash_redis'
 
 const SESSION_PREFIX = 'user_session_';
@@ -102,59 +102,6 @@ export class RedisController {
         }
     };
 
-    static getUserSessionOld = async (req: Request, res: Response) => {
-        try {
-            // Estrai l'ID utente dai parametri della richiesta
-            const { user_id: userId } = req.params
-
-            // Verifica che l'ID utente sia presente
-            if (!userId) {
-                return res.status(400).send({ message: 'User ID is required' });
-            }
-
-            // Connetti a Redis
-            await redisConnect()
-
-            // Costruisci la chiave per la sessione utente
-            const key = `${SESSION_PREFIX}${userId}`;
-
-            // Recupera i dati della sessione da Redis
-            const sessionData = await getRedisValue(key);
-
-            // Se non ci sono dati, restituisci un errore 404
-            if (!sessionData) {
-                return res.status(404).send({ message: 'User session not found' });
-            }
-
-            // Verifica che i dati siano in formato stringa (JSON serializzato)
-            if (typeof sessionData === 'string') {
-                try {
-                    // Prova a deserializzare i dati JSON
-                    const session = JSON.parse(sessionData) as UserSession;
-
-                    // Restituisci la sessione con codice 200
-                    console.log(`User session retrieved with key: ${key}`);
-                    return res.status(200).send(session);
-                } catch (parseError) {
-                    // Gestisci errori di parsing JSON
-                    console.error('Error parsing session data:', parseError);
-                    return res.status(500).send({ message: 'Invalid session data format' });
-                }
-            }
-
-            // Se i dati non sono in formato stringa, restituisci un errore
-            return res.status(500).send({ message: 'Invalid session data format' });
-
-        } catch (error) {
-            // Gestisci eventuali errori generici
-            console.error('Error retrieving user session:', error);
-            return res.status(500).send({ message: 'Failed to retrieve user session' });
-
-        } finally {
-            // Assicurati di disconnettere da Redis
-            await disconnectRedis();
-        }
-    };
 
     /**
      * Salva una sessione utente in Redis
@@ -185,5 +132,142 @@ export class RedisController {
             console.error('Error saving user session:', error);
             return next(error);
         }
-    }
+    };
+
+    /**
+     * Test method - Salva un key-value in Redis (per pagine AI)
+     * @param key Chiave da salvare
+     * @param value Valore da salvare
+     * @returns Promise<boolean> true se salvato con successo
+     */
+    static testSet = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { key, value } = req.body;
+
+            // Verifica che key e value siano presenti
+            if (!key || !value) {
+                res.status(400).send({ 
+                    success: false, 
+                    error: 'Key and value are required' 
+                });
+                return;
+            }
+
+            await redisConnect();
+            
+            // Salva il valore in Redis
+            await setRedisValue(key, value);
+            
+            console.log(`Test key-value saved: ${key}`);
+            await disconnectRedis();
+
+            res.status(200).send({ 
+                success: true, 
+                id: key,
+                active: true 
+            });
+        } catch (error) {
+            console.error('Error in testSet:', error);
+            res.status(500).send({ 
+                success: false, 
+                error: 'Failed to save key-value' 
+            });
+        }
+    };
+
+    /**
+     * Test method - Recupera un valore da Redis (per pagine AI)
+     * @param key Chiave da recuperare
+     * @returns Promise<string | null> valore recuperato o null se non trovato
+     */
+    static testGet = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { key } = req.query;
+
+            // Verifica che key sia presente
+            if (!key || typeof key !== 'string') {
+                res.status(400).send({ 
+                    success: false, 
+                    error: 'Key is required' 
+                });
+                return;
+            }
+
+            await redisConnect();
+            
+            // Recupera il valore da Redis
+            const value = await getRedisValue(key);
+            
+            console.log(`Test key-value retrieved: ${key}`);
+            await disconnectRedis();
+
+            if (value) {
+                res.status(200).send({ 
+                    value: value 
+                });
+            } else {
+                res.status(404).send({ 
+                    success: false, 
+                    error: 'Key not found' 
+                });
+            }
+        } catch (error) {
+            console.error('Error in testGet:', error);
+            res.status(500).send({ 
+                success: false, 
+                error: 'Failed to retrieve value' 
+            });
+        }
+    };
+
+    /**
+     * Test method - Elimina un key-value da Redis (per pagine AI)
+     * @param key Chiave da eliminare
+     * @returns Promise<boolean> true se eliminato con successo
+     */
+    static testDelete = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { key } = req.query;
+
+            // Verifica che key sia presente
+            if (!key || typeof key !== 'string') {
+                res.status(400).send({ 
+                    success: false, 
+                    error: 'Key is required' 
+                });
+                return;
+            }
+
+            await redisConnect();
+            
+            // Recupera prima il valore per confermare l'esistenza
+            const currentValue = await getRedisValue(key);
+            
+            if (!currentValue) {
+                res.status(404).send({ 
+                    success: false, 
+                    error: 'Key not found' 
+                });
+                return;
+            }
+            
+            // Elimina il valore da Redis impostandolo a stringa vuota (approccio alternativo)
+            await setRedisValue(key, '');
+            
+            console.log(`Test key-value deleted: ${key}`);
+            await disconnectRedis();
+
+            res.status(200).send({ 
+                success: true, 
+                id: key,
+                active: true 
+            });
+        } catch (error) {
+            console.error('Error in testDelete:', error);
+            res.status(500).send({ 
+                success: false, 
+                error: 'Failed to delete key-value' 
+            });
+        }
+    };
 }
