@@ -1,4 +1,7 @@
 /* @@ types @@ */
+// Import tipi compatibili con il client
+export * from './client-compatible';
+
 export type MessageType = {
     role: string;
     message: string;
@@ -18,7 +21,8 @@ export type OpenAIModel = {
     available: boolean;
 }
 
-export interface UserSession {
+// Manteniamo i tipi legacy per backward compatibility
+export interface LegacyUserSession {
 
     id: string
     email: string
@@ -39,8 +43,8 @@ export interface UserSession {
     }
 }
 
-// Tipi per pagine AI
-export interface Page {
+// Tipi per pagine AI legacy
+export interface LegacyPage {
     id: string;
     title: string;
     content: string;
@@ -51,10 +55,10 @@ export interface Page {
     [key: string]: any;
 }
 
-export interface PageSessionData {
+export interface LegacyPageSessionData {
     pageId: string;
     userId: string;
-    page: Page;
+    page: LegacyPage;
     generatedAt: string;
     prompt: string;
     metadata?: {

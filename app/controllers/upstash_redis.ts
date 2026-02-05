@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { UserSession, PageSessionData } from '../types/types'
+import { UserSession, PageSessionData, ApiResponse, PageSessionResponse, TypeAdapter } from '../types/types'
 import { getRedisValue, setRedisValue, redisConnect, disconnectRedis } from '../services/upstash_redis'
 
 const SESSION_PREFIX = 'user_session_';
@@ -106,20 +106,24 @@ export class RedisController {
 
     /**
      * Salva una sessione utente in Redis
-     * @param session Dati della sessione utente
-     * @param expirySeconds Tempo di scadenza in secondi (default: 24 ore)
-    */
+     * Ora supporta sia tipi legacy che client-compatible
+     */
     static saveUserSession = async (req: Request, res: Response, next: Function): Promise<Response | undefined> => {
         try {
             const { session, expirySeconds } = req.body;
 
             // Verifica che session sia presente e valido
             if (!session || !session.id) {
-                return res.status(400).send({ message: 'Invalid session data' });
+                return res.status(400).json({ 
+                    success: false, 
+                    error: 'Invalid session data - session.id is required' 
+                } as ApiResponse);
             }
 
             await redisConnect();
             const key = `${SESSION_PREFIX}${session.id}`;
+            
+            // Converti la sessione in formato JSON compatibile
             const sessionData = JSON.stringify(session);
 
             // Utilizziamo il metodo esistente setRedisValue
@@ -128,7 +132,13 @@ export class RedisController {
             console.log(`User session saved with key: ${key} and expiry: ${expirySeconds || SESSION_EXPIRY} seconds`);
             await disconnectRedis();
 
-            res.status(200).send({ message: 'Session saved successfully' });
+            return res.status(200).json({ 
+                success: true, 
+                id: session.id,
+                active: true,
+                message: 'Session saved successfully'
+            } as ApiResponse);
+
         } catch (error) {
             console.error('Error saving user session:', error);
             return next(error);
@@ -274,8 +284,7 @@ export class RedisController {
 
     /**
      * Salva una pagina AI generata in Redis
-     * @param userId ID dell'utente (dall'autenticazione)
-     * @param pageData Dati della pagina AI generata
+     * Ora supporta pagine complesse del client
      */
     static saveAIGeneratedPage = async (req: Request, res: Response): Promise<void> => {
         try {
@@ -283,19 +292,19 @@ export class RedisController {
 
             // Verifica che userId e pageData siano presenti
             if (!userId || !pageData) {
-                res.status(400).send({ 
+                res.status(400).json({ 
                     success: false, 
                     error: 'userId and pageData are required' 
-                });
+                } as ApiResponse);
                 return;
             }
 
             // Verifica che pageData contenga i campi necessari
             if (!pageData.pageId || !pageData.page || !pageData.prompt) {
-                res.status(400).send({ 
+                res.status(400).json({ 
                     success: false, 
                     error: 'pageData must contain pageId, page, and prompt' 
-                });
+                } as ApiResponse);
                 return;
             }
 
@@ -304,11 +313,11 @@ export class RedisController {
             // Costruisci la chiave per la pagina AI
             const key = `${AI_PAGES_PREFIX}${userId}:${pageData.pageId}`;
             
-            // Prepara i dati completi della pagina
+            // Prepara i dati completi della pagina - supporta tipi client
             const completePageData: PageSessionData = {
                 pageId: pageData.pageId,
                 userId: userId,
-                page: pageData.page,
+                page: pageData.page, // Ora accetta pagine complesse del client
                 generatedAt: new Date().toISOString(),
                 prompt: pageData.prompt,
                 metadata: pageData.metadata || {
@@ -327,25 +336,25 @@ export class RedisController {
             console.log(`AI page saved with key: ${key}`);
             await disconnectRedis();
 
-            res.status(200).send({ 
+            res.status(200).json({ 
                 success: true, 
                 id: key,
                 active: true,
                 data: completePageData
-            });
+            } as PageSessionResponse);
+
         } catch (error) {
             console.error('Error in saveAIGeneratedPage:', error);
-            res.status(500).send({ 
+            res.status(500).json({ 
                 success: false, 
                 error: 'Failed to save AI generated page' 
-            });
+            } as ApiResponse);
         }
     };
 
     /**
      * Recupera una pagina AI generata da Redis
-     * @param userId ID dell'utente
-     * @param pageId ID della pagina
+     * Ora supporta pagine complesse del client
      */
     static getAIGeneratedPage = async (req: Request, res: Response): Promise<void> => {
         try {
@@ -353,10 +362,10 @@ export class RedisController {
 
             // Verifica che userId e pageId siano presenti
             if (!userId || !pageId || typeof userId !== 'string' || typeof pageId !== 'string') {
-                res.status(400).send({ 
+                res.status(400).json({ 
                     success: false, 
                     error: 'userId and pageId are required as query parameters' 
-                });
+                } as ApiResponse);
                 return;
             }
 
@@ -374,41 +383,42 @@ export class RedisController {
             if (value && typeof value === 'string') {
                 try {
                     const pageData = JSON.parse(value) as PageSessionData;
-                    res.status(200).send({ 
+                    res.status(200).json({ 
                         success: true,
                         data: pageData
-                    });
+                    } as PageSessionResponse);
                 } catch (parseError) {
-                    res.status(500).send({ 
+                    res.status(500).json({ 
                         success: false, 
                         error: 'Invalid page data format' 
-                    });
+                    } as ApiResponse);
                 }
             } else if (value) {
                 try {
                     const pageData = value as PageSessionData;
-                    res.status(200).send({ 
+                    res.status(200).json({ 
                         success: true,
                         data: pageData
-                    });
+                    } as PageSessionResponse);
                 } catch (parseError) {
-                    res.status(500).send({ 
+                    res.status(500).json({ 
                         success: false, 
                         error: 'Invalid page data format' 
-                    });
+                    } as ApiResponse);
                 }
             } else {
-                res.status(404).send({ 
+                res.status(404).json({ 
                     success: false, 
                     error: 'AI generated page not found' 
-                });
+                } as ApiResponse);
             }
+
         } catch (error) {
             console.error('Error in getAIGeneratedPage:', error);
-            res.status(500).send({ 
+            res.status(500).json({ 
                 success: false, 
                 error: 'Failed to retrieve AI generated page' 
-            });
+            } as ApiResponse);
         }
     };
 
