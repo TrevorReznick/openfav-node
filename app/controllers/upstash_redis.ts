@@ -3,6 +3,7 @@ import { UserSession, PageSessionData } from '../types/types'
 import { getRedisValue, setRedisValue, redisConnect, disconnectRedis } from '../services/upstash_redis'
 
 const SESSION_PREFIX = 'user_session_';
+const AI_PAGES_PREFIX = 'ai_generated_pages:';
 const SESSION_EXPIRY = 86400; // 24 ore in secondi
 
 export class RedisController {
@@ -267,6 +268,247 @@ export class RedisController {
             res.status(500).send({ 
                 success: false, 
                 error: 'Failed to delete key-value' 
+            });
+        }
+    };
+
+    /**
+     * Salva una pagina AI generata in Redis
+     * @param userId ID dell'utente (dall'autenticazione)
+     * @param pageData Dati della pagina AI generata
+     */
+    static saveAIGeneratedPage = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { userId, pageData } = req.body;
+
+            // Verifica che userId e pageData siano presenti
+            if (!userId || !pageData) {
+                res.status(400).send({ 
+                    success: false, 
+                    error: 'userId and pageData are required' 
+                });
+                return;
+            }
+
+            // Verifica che pageData contenga i campi necessari
+            if (!pageData.pageId || !pageData.page || !pageData.prompt) {
+                res.status(400).send({ 
+                    success: false, 
+                    error: 'pageData must contain pageId, page, and prompt' 
+                });
+                return;
+            }
+
+            await redisConnect();
+            
+            // Costruisci la chiave per la pagina AI
+            const key = `${AI_PAGES_PREFIX}${userId}:${pageData.pageId}`;
+            
+            // Prepara i dati completi della pagina
+            const completePageData: PageSessionData = {
+                pageId: pageData.pageId,
+                userId: userId,
+                page: pageData.page,
+                generatedAt: new Date().toISOString(),
+                prompt: pageData.prompt,
+                metadata: pageData.metadata || {
+                    model: 'gpt-4',
+                    attempt: 1,
+                    tokens: { prompt: 0, completion: 0, total: 0 },
+                    cached: false,
+                    generated_at: new Date().toISOString()
+                },
+                expiresAt: Date.now() + (SESSION_EXPIRY * 1000)
+            };
+            
+            // Salva i dati in Redis
+            await setRedisValue(key, JSON.stringify(completePageData));
+            
+            console.log(`AI page saved with key: ${key}`);
+            await disconnectRedis();
+
+            res.status(200).send({ 
+                success: true, 
+                id: key,
+                active: true,
+                data: completePageData
+            });
+        } catch (error) {
+            console.error('Error in saveAIGeneratedPage:', error);
+            res.status(500).send({ 
+                success: false, 
+                error: 'Failed to save AI generated page' 
+            });
+        }
+    };
+
+    /**
+     * Recupera una pagina AI generata da Redis
+     * @param userId ID dell'utente
+     * @param pageId ID della pagina
+     */
+    static getAIGeneratedPage = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { userId, pageId } = req.query;
+
+            // Verifica che userId e pageId siano presenti
+            if (!userId || !pageId || typeof userId !== 'string' || typeof pageId !== 'string') {
+                res.status(400).send({ 
+                    success: false, 
+                    error: 'userId and pageId are required as query parameters' 
+                });
+                return;
+            }
+
+            await redisConnect();
+            
+            // Costruisci la chiave per la pagina AI
+            const key = `${AI_PAGES_PREFIX}${userId}:${pageId}`;
+            
+            // Recupera i dati da Redis
+            const value = await getRedisValue(key);
+            
+            console.log(`AI page retrieved: ${key}`);
+            await disconnectRedis();
+
+            if (value && typeof value === 'string') {
+                try {
+                    const pageData = JSON.parse(value) as PageSessionData;
+                    res.status(200).send({ 
+                        success: true,
+                        data: pageData
+                    });
+                } catch (parseError) {
+                    res.status(500).send({ 
+                        success: false, 
+                        error: 'Invalid page data format' 
+                    });
+                }
+            } else if (value) {
+                try {
+                    const pageData = value as PageSessionData;
+                    res.status(200).send({ 
+                        success: true,
+                        data: pageData
+                    });
+                } catch (parseError) {
+                    res.status(500).send({ 
+                        success: false, 
+                        error: 'Invalid page data format' 
+                    });
+                }
+            } else {
+                res.status(404).send({ 
+                    success: false, 
+                    error: 'AI generated page not found' 
+                });
+            }
+        } catch (error) {
+            console.error('Error in getAIGeneratedPage:', error);
+            res.status(500).send({ 
+                success: false, 
+                error: 'Failed to retrieve AI generated page' 
+            });
+        }
+    };
+
+    /**
+     * Elimina una pagina AI generata da Redis
+     * @param userId ID dell'utente
+     * @param pageId ID della pagina
+     */
+    static deleteAIGeneratedPage = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { userId, pageId } = req.query;
+
+            // Verifica che userId e pageId siano presenti
+            if (!userId || !pageId || typeof userId !== 'string' || typeof pageId !== 'string') {
+                res.status(400).send({ 
+                    success: false, 
+                    error: 'userId and pageId are required as query parameters' 
+                });
+                return;
+            }
+
+            await redisConnect();
+            
+            // Costruisci la chiave per la pagina AI
+            const key = `${AI_PAGES_PREFIX}${userId}:${pageId}`;
+            
+            // Verifica che la pagina esista
+            const currentValue = await getRedisValue(key);
+            
+            if (!currentValue) {
+                res.status(404).send({ 
+                    success: false, 
+                    error: 'AI generated page not found' 
+                });
+                return;
+            }
+            
+            // Elimina la pagina da Redis
+            await setRedisValue(key, '');
+            
+            console.log(`AI page deleted: ${key}`);
+            await disconnectRedis();
+
+            res.status(200).send({ 
+                success: true, 
+                id: key,
+                active: true 
+            });
+        } catch (error) {
+            console.error('Error in deleteAIGeneratedPage:', error);
+            res.status(500).send({ 
+                success: false, 
+                error: 'Failed to delete AI generated page' 
+            });
+        }
+    };
+
+    /**
+     * Recupera tutte le pagine AI generate di un utente
+     * @param userId ID dell'utente
+     */
+    static getUserAIGeneratedPages = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { userId } = req.params;
+
+            // Verifica che userId sia presente
+            if (!userId || typeof userId !== 'string') {
+                res.status(400).send({ 
+                    success: false, 
+                    error: 'userId is required' 
+                });
+                return;
+            }
+
+            await redisConnect();
+            
+            // Nota: Questa implementazione richiede che il servizio Redis supporti la ricerca per pattern
+            // Per ora restituiamo un messaggio che indica la necessità di implementare la ricerca
+            const prefix = `${AI_PAGES_PREFIX}${userId}:`;
+            
+            // Per Upstash Redis, potremmo dover mantenere un indice separato
+            // Per ora, restituiamo una risposta di base
+            console.log(`Retrieving AI pages for user: ${userId} with prefix: ${prefix}`);
+            await disconnectRedis();
+
+            // TODO: Implementare la ricerca per pattern quando supportata dal servizio Redis
+            // Per ora, restituiamo una risposta vuota
+            res.status(200).send({ 
+                success: true,
+                data: {
+                    userId: userId,
+                    pages: [],
+                    message: 'Pattern search not yet implemented - use specific pageId for direct access'
+                }
+            });
+        } catch (error) {
+            console.error('Error in getUserAIGeneratedPages:', error);
+            res.status(500).send({ 
+                success: false, 
+                error: 'Failed to retrieve user AI generated pages' 
             });
         }
     };

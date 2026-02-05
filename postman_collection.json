@@ -1,0 +1,324 @@
+{
+  "info": {
+    "name": "OpenFav Node API",
+    "description": "Collection for OpenFav Node.js application endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Main Routes",
+      "item": [
+        {
+          "name": "Home",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/",
+              "host": ["{{node_server}}"],
+              "path": [""]
+            },
+            "description": "Welcome message endpoint"
+          }
+        },
+        {
+          "name": "Test API",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/test-api",
+              "host": ["{{node_server}}"],
+              "path": ["api", "test-api"]
+            },
+            "description": "Test API endpoint"
+          }
+        },
+        {
+          "name": "Test Mail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/test-mail",
+              "host": ["{{node_server}}"],
+              "path": ["api", "test-mail"]
+            },
+            "description": "Test mail functionality"
+          }
+        },
+        {
+          "name": "Send Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"test@example.com\",\n  \"subject\": \"Test Email\",\n  \"text\": \"This is a test email\",\n  \"html\": \"<p>This is a <b>test email</b></p>\"\n}"
+            },
+            "url": {
+              "raw": "{{node_server}}/api/send-email",
+              "host": ["{{node_server}}"],
+              "path": ["api", "send-email"]
+            },
+            "description": "Send email endpoint"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Storage Routes",
+      "item": [
+        {
+          "name": "Upload Image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{node_server}}/api/upload",
+              "host": ["{{node_server}}"],
+              "path": ["api", "upload"]
+            },
+            "description": "Upload image endpoint"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Redis/Session Routes",
+      "item": [
+        {
+          "name": "Set Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user123\",\n  \"sessionData\": {\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"preferences\": {\n      \"theme\": \"dark\",\n      \"language\": \"en\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{node_server}}/api/set-session",
+              "host": ["{{node_server}}"],
+              "path": ["api", "set-session"]
+            },
+            "description": "Save user session in Redis"
+          }
+        },
+        {
+          "name": "Get Session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/session/user123",
+              "host": ["{{node_server}}"],
+              "path": ["api", "session", "user123"]
+            },
+            "description": "Get user session from Redis"
+          }
+        },
+        {
+          "name": "Test Redis",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/test-redis",
+              "host": ["{{node_server}}"],
+              "path": ["api", "test-redis"]
+            },
+            "description": "Test Redis connection"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Controller Routes",
+      "item": [
+        {
+          "name": "Test Controller",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Test controller request\",\n  \"data\": {\n    \"param1\": \"value1\",\n    \"param2\": \"value2\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{node_server}}/api/test-controller",
+              "host": ["{{node_server}}"],
+              "path": ["api", "test-controller"]
+            },
+            "description": "Test custom controller"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Generated Pages",
+      "item": [
+        {
+          "name": "Save AI Generated Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user-123\",\n  \"pageData\": {\n    \"pageId\": \"ai-generated/page-1\",\n    \"page\": {\n      \"id\": \"ai-generated/page-1\",\n      \"title\": \"AI Generated Page\",\n      \"content\": \"This page was generated by AI\",\n      \"createdAt\": \"2024-02-04T10:31:00Z\",\n      \"updatedAt\": \"2024-02-04T10:31:00Z\",\n      \"userId\": \"user-123\"\n    },\n    \"prompt\": \"Generate a test page for Openfav\",\n    \"metadata\": {\n      \"model\": \"gpt-4\",\n      \"attempt\": 1,\n      \"tokens\": { \"prompt\": 10, \"completion\": 50, \"total\": 60 },\n      \"cached\": false,\n      \"generated_at\": \"2024-02-04T10:31:00Z\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{node_server}}/api/ai-pages/save",
+              "host": ["{{node_server}}"],
+              "path": ["api", "ai-pages", "save"]
+            },
+            "description": "Save an AI generated page to Redis with key format: ai_generated_pages:{userId}:{pageId}"
+          }
+        },
+        {
+          "name": "Get AI Generated Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/ai-pages/get?userId=user-123&pageId=ai-generated/page-1",
+              "host": ["{{node_server}}"],
+              "path": ["api", "ai-pages", "get"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user-123",
+                  "description": "User ID from auth session"
+                },
+                {
+                  "key": "pageId",
+                  "value": "ai-generated/page-1",
+                  "description": "Page ID to retrieve"
+                }
+              ]
+            },
+            "description": "Retrieve an AI generated page from Redis"
+          }
+        },
+        {
+          "name": "Delete AI Generated Page",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/ai-pages/delete?userId=user-123&pageId=ai-generated/page-1",
+              "host": ["{{node_server}}"],
+              "path": ["api", "ai-pages", "delete"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user-123",
+                  "description": "User ID from auth session"
+                },
+                {
+                  "key": "pageId",
+                  "value": "ai-generated/page-1",
+                  "description": "Page ID to delete"
+                }
+              ]
+            },
+            "description": "Delete an AI generated page from Redis"
+          }
+        },
+        {
+          "name": "Get User AI Generated Pages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/ai-pages/user/user-123",
+              "host": ["{{node_server}}"],
+              "path": ["api", "ai-pages", "user", "user-123"]
+            },
+            "description": "Retrieve all AI generated pages for a specific user (Note: Pattern search not yet implemented for Upstash Redis)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "SSE Routes",
+      "item": [
+        {
+          "name": "SSE Stream",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/event-stream"
+              },
+              {
+                "key": "Cache-Control",
+                "value": "no-cache"
+              }
+            ],
+            "url": {
+              "raw": "{{node_server}}/stream/sse",
+              "host": ["{{node_server}}"],
+              "path": ["stream", "sse"]
+            },
+            "description": "Server-Sent Events stream endpoint"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Pre-request script for the collection",
+          "console.log('Executing pre-request script for:', pm.info.requestName);"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Test script for the collection",
+          "pm.test('Status code is successful', function () {",
+          "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+          "});"
+        ]
+      }
+    }
+  ]
+}

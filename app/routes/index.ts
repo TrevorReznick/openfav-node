@@ -36,6 +36,12 @@ router.delete('/test/mock/delete', redisMock.testDelete)
 router.get('/test/mock/list', redisMock.testList)
 router.delete('/test/mock/clear', redisMock.testClear)
 
+// AI Generated Pages endpoints
+router.post('/ai-pages/save', redis.saveAIGeneratedPage)
+router.get('/ai-pages/get', redis.getAIGeneratedPage)
+router.delete('/ai-pages/delete', redis.deleteAIGeneratedPage)
+router.get('/ai-pages/user/:userId', redis.getUserAIGeneratedPages)
+
 router.post('/test-controller', sub.home)
 /*
 router.post('/screenshot', captureScreenshot)
