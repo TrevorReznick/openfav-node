@@ -333,6 +333,41 @@ export class RedisController {
             // Salva i dati in Redis
             await setRedisValue(key, JSON.stringify(completePageData));
             
+            // Aggiorna l'indice delle pagine dell'utente
+            const indexKey = `${AI_PAGES_PREFIX}${userId}`;
+            const existingIndex = await getRedisValue(indexKey);
+            
+            let pageIds: string[] = [];
+            if (existingIndex) {
+                try {
+                    // Prova JSON.parse diretto
+                    pageIds = JSON.parse(existingIndex as string);
+                    if (!Array.isArray(pageIds)) {
+                        // Se non è array, potrebbe essere una stringa singola o array con virgolette
+                        const cleaned = (existingIndex as string).replace(/['\[\]]/g, '').trim();
+                        if (cleaned.includes(',')) {
+                            pageIds = cleaned.split(',').map((id: string) => id.trim());
+                        } else if (cleaned) {
+                            pageIds = [cleaned];
+                        } else {
+                            pageIds = [];
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Failed to parse existing index:', existingIndex);
+                    pageIds = [];
+                }
+            }
+            
+            // Aggiungi il nuovo pageId se non esiste già
+            if (!pageIds.includes(pageData.pageId)) {
+                pageIds.push(pageData.pageId);
+            }
+            
+            // Salva l'indice aggiornato
+            await setRedisValue(indexKey, JSON.stringify(pageIds));
+            console.log(`Updated pages index for user ${userId} with ${pageIds.length} pages`);
+            
             console.log(`AI page saved with key: ${key}`);
             await disconnectRedis();
 
@@ -495,27 +530,101 @@ export class RedisController {
 
             await redisConnect();
             
-            // Nota: Questa implementazione richiede che il servizio Redis supporti la ricerca per pattern
-            // Per ora restituiamo un messaggio che indica la necessità di implementare la ricerca
-            const prefix = `${AI_PAGES_PREFIX}${userId}:`;
+            // Prima recupera l'indice delle pagine dell'utente
+            const indexKey = `${AI_PAGES_PREFIX}${userId}`;
+            console.log(`Getting AI pages index for user: ${userId}, key: ${indexKey}`);
             
-            // Per Upstash Redis, potremmo dover mantenere un indice separato
-            // Per ora, restituiamo una risposta di base
-            console.log(`Retrieving AI pages for user: ${userId} with prefix: ${prefix}`);
+            const indexData = await getRedisValue(indexKey);
+            
+            if (!indexData) {
+                console.log(`No index found for user: ${userId}`);
+                await disconnectRedis();
+                res.status(200).send({ 
+                    success: true,
+                    data: {
+                        userId: userId,
+                        pages: [],
+                        count: 0,
+                        message: 'No pages found for user'
+                    }
+                });
+                return;
+            }
+
+            let pageIds: string[] = [];
+            try {
+                const parsed = JSON.parse(indexData as string);
+                pageIds = Array.isArray(parsed) ? parsed : [parsed];
+            } catch (e) {
+                console.warn(`Failed to parse index data for user ${userId}:`, indexData);
+                // Se il parsing fallisce, potrebbe essere un array con quotes singoli
+                try {
+                    // Rimuovi quotes singoli e dividi per virgola
+                    const indexStr = typeof indexData === 'string' ? indexData : String(indexData);
+                    const cleaned = indexStr.replace(/['\[\]]/g, '').trim();
+                    if (cleaned.includes(',')) {
+                        pageIds = cleaned.split(',').map((id: string) => id.trim());
+                    } else if (cleaned) {
+                        pageIds = [cleaned];
+                    }
+                } catch (e2) {
+                    console.warn(`Failed to parse as simple array:`, e2);
+                    pageIds = [String(indexData)];
+                }
+            }
+
+            console.log(`Found ${pageIds.length} page IDs for user: ${userId}`);
+
+            // Recupera i dettagli di ogni pagina
+            const pages = [];
+            for (const pageId of pageIds) {
+                try {
+                    // Usa il prefisso corretto per produzione
+                    const pageKey = `${AI_PAGES_PREFIX}${userId}:${pageId}`;
+                    
+                    let pageData = await getRedisValue(pageKey);
+                    
+                    if (pageData) {
+                        try {
+                            const page = JSON.parse(pageData as string);
+                            pages.push({
+                                id: page.spec?.id || page.id || pageId,
+                                title: page.spec?.title || page.title || 'Untitled Page',
+                                subtitle: page.spec?.subtitle || page.subtitle,
+                                description: page.spec?.description || page.description,
+                                iconName: page.spec?.iconName || page.iconName,
+                                template: page.spec?.template || page.template,
+                                policy: page.spec?.policy || page.policy,
+                                createdAt: page.spec?.createdAt || page.createdAt,
+                                updatedAt: page.spec?.updatedAt || page.updatedAt,
+                                prompt: page.prompt,
+                                generatedAt: page.generatedAt
+                            });
+                        } catch (parseError) {
+                            console.warn(`Failed to parse page ${pageId}:`, parseError);
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`Failed to load page ${pageId}:`, error);
+                }
+            }
+
             await disconnectRedis();
 
-            // TODO: Implementare la ricerca per pattern quando supportata dal servizio Redis
-            // Per ora, restituiamo una risposta vuota
+            console.log(`Successfully retrieved ${pages.length} pages for user: ${userId}`);
+            
             res.status(200).send({ 
                 success: true,
                 data: {
                     userId: userId,
-                    pages: [],
-                    message: 'Pattern search not yet implemented - use specific pageId for direct access'
+                    pages: pages,
+                    count: pages.length,
+                    message: `Found ${pages.length} pages for user ${userId}`
                 }
             });
         } catch (error) {
             console.error('Error in getUserAIGeneratedPages:', error);
+            await disconnectRedis();
             res.status(500).send({ 
                 success: false, 
                 error: 'Failed to retrieve user AI generated pages' 

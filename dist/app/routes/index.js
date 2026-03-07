@@ -34,6 +34,11 @@ router.get('/test/mock/get', redis_mock_1.RedisMockController.testGet);
 router.delete('/test/mock/delete', redis_mock_1.RedisMockController.testDelete);
 router.get('/test/mock/list', redis_mock_1.RedisMockController.testList);
 router.delete('/test/mock/clear', redis_mock_1.RedisMockController.testClear);
+// AI Generated Pages endpoints
+router.post('/ai-pages/save', upstash_redis_1.RedisController.saveAIGeneratedPage);
+router.get('/ai-pages/get', upstash_redis_1.RedisController.getAIGeneratedPage);
+router.delete('/ai-pages/delete', upstash_redis_1.RedisController.deleteAIGeneratedPage);
+router.get('/ai-pages/user/:userId', upstash_redis_1.RedisController.getUserAIGeneratedPages);
 router.post('/test-controller', my_controller_1.SubController.home);
 /*
 router.post('/screenshot', captureScreenshot)
