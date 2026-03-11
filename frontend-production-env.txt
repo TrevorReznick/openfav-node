@@ -1,0 +1,18 @@
+# Configurazione Frontend per Produzione AI
+# Sostituisci il contenuto del tuo .env con questo
+
+PUBLIC_SUPABASE_URL=
+PUBLIC_SUPABASE_ANON_KEY=
+PUBLIC_PROD_API_URL=https://openfav-node.fly.dev/api/
+PUBLIC_REDIS_API_URL=https://openfav-node.fly.dev/api/
+API_ENDPOINT=api/v1/main/doQueries
+AI_SERVER_API_URL=https://openfav-node.fly.dev/api/
+
+PUBLIC_THUMBNAIL_WS_API_KEY=
+PUBLIC_THUMBNAIL_WS_API_KEY____=
+VITE_DEEPSEEK_API_KEY=
+DEEPSEEK_API_KEY=
+PUBLIC_DEVTOOLS_ENABLED=true
+PUBLIC_AUTH_ADAPTER=supabase
+
+# Importante: Disabilita mock mode per usare sessioni reali
