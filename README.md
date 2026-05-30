@@ -42,6 +42,7 @@ npm start
 
     Node.js server with Express
     PostgreSQL database with TypeORM
+    Redis storage for sessions and AI generated pages via Upstash
     Data validation with Joi
     API documentation with Swagger
     Error handling middleware
@@ -56,6 +57,8 @@ Create a .env file based on the .env.example to set required environment variabl
 
     DATABASE_URL - PostgreSQL database URI
     PORT - Server port
+    UPSTASH_REDIS_REST_URL - Upstash Redis REST endpoint
+    UPSTASH_REDIS_REST_TOKEN - Upstash Redis REST token
 
 ## Documentation
 

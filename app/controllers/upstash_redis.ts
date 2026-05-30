@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { UserSession, PageSessionData, ApiResponse, PageSessionResponse, TypeAdapter } from '../types/types'
-import { getRedisValue, setRedisValue, redisConnect, disconnectRedis } from '../services/upstash_redis'
+import { getRedisValue, setRedisValue, deleteRedisValue, redisConnect, disconnectRedis } from '../services/upstash_redis'
 
 const SESSION_PREFIX = 'user_session_';
 const AI_PAGES_PREFIX = 'ai_generated_pages:';
@@ -127,7 +127,7 @@ export class RedisController {
             const sessionData = JSON.stringify(session);
 
             // Utilizziamo il metodo esistente setRedisValue
-            await setRedisValue(key, sessionData);
+            await setRedisValue(key, sessionData, expirySeconds || SESSION_EXPIRY);
 
             console.log(`User session saved with key: ${key} and expiry: ${expirySeconds || SESSION_EXPIRY} seconds`);
             await disconnectRedis();
@@ -255,6 +255,7 @@ export class RedisController {
             const currentValue = await getRedisValue(key);
             
             if (!currentValue) {
+                await disconnectRedis();
                 res.status(404).send({ 
                     success: false, 
                     error: 'Key not found' 
@@ -262,8 +263,7 @@ export class RedisController {
                 return;
             }
             
-            // Elimina il valore da Redis impostandolo a stringa vuota (approccio alternativo)
-            await setRedisValue(key, '');
+            await deleteRedisValue(key);
             
             console.log(`Test key-value deleted: ${key}`);
             await disconnectRedis();
@@ -331,7 +331,7 @@ export class RedisController {
             };
             
             // Salva i dati in Redis
-            await setRedisValue(key, JSON.stringify(completePageData));
+            await setRedisValue(key, JSON.stringify(completePageData), SESSION_EXPIRY);
             
             // Aggiorna l'indice delle pagine dell'utente
             const indexKey = `${AI_PAGES_PREFIX}${userId}`;
@@ -484,6 +484,7 @@ export class RedisController {
             const currentValue = await getRedisValue(key);
             
             if (!currentValue) {
+                await disconnectRedis();
                 res.status(404).send({ 
                     success: false, 
                     error: 'AI generated page not found' 
@@ -491,8 +492,21 @@ export class RedisController {
                 return;
             }
             
-            // Elimina la pagina da Redis
-            await setRedisValue(key, '');
+            await deleteRedisValue(key);
+            
+            // Rimuovi il pageId dall'indice utente, se presente
+            const indexKey = `${AI_PAGES_PREFIX}${userId}`;
+            const existingIndex = await getRedisValue(indexKey);
+            if (existingIndex) {
+                try {
+                    const parsedIndex = JSON.parse(existingIndex as string);
+                    const pageIds = Array.isArray(parsedIndex) ? parsedIndex : [parsedIndex];
+                    const updatedPageIds = pageIds.filter((id: string) => id !== pageId);
+                    await setRedisValue(indexKey, JSON.stringify(updatedPageIds));
+                } catch (parseError) {
+                    console.warn(`Failed to update AI pages index for user ${userId}:`, parseError);
+                }
+            }
             
             console.log(`AI page deleted: ${key}`);
             await disconnectRedis();
