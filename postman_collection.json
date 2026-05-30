@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "OpenFav Node API",
-    "description": "Collection for OpenFav Node.js application endpoints",
+    "description": "Collection for OpenFav Node.js application endpoints - All 22 endpoints",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -31,7 +31,7 @@
               "host": ["{{node_server}}"],
               "path": ["api", "test-api"]
             },
-            "description": "Test API endpoint"
+            "description": "Test API endpoint - returns 'Hello from api'"
           }
         },
         {
@@ -66,7 +66,7 @@
               "host": ["{{node_server}}"],
               "path": ["api", "send-email"]
             },
-            "description": "Send email endpoint"
+            "description": "Send email endpoint - expects to, subject, text, html"
           }
         }
       ]
@@ -94,7 +94,7 @@
               "host": ["{{node_server}}"],
               "path": ["api", "upload"]
             },
-            "description": "Upload image endpoint"
+            "description": "Upload image endpoint - multipart/form-data with 'image' field"
           }
         }
       ]
@@ -102,6 +102,19 @@
     {
       "name": "Redis/Session Routes",
       "item": [
+        {
+          "name": "Test Redis",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/test-redis",
+              "host": ["{{node_server}}"],
+              "path": ["api", "test-redis"]
+            },
+            "description": "Test Redis connection - sets 'foo' => 'bar' and retrieves it"
+          }
+        },
         {
           "name": "Set Session",
           "request": {
@@ -114,14 +127,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"user123\",\n  \"sessionData\": {\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"preferences\": {\n      \"theme\": \"dark\",\n      \"language\": \"en\"\n    }\n  }\n}"
+              "raw": "{\n  \"session\": {\n    \"id\": \"user123\",\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"preferences\": {\n      \"theme\": \"dark\",\n      \"language\": \"en\"\n    }\n  },\n  \"expirySeconds\": 86400\n}"
             },
             "url": {
               "raw": "{{node_server}}/api/set-session",
               "host": ["{{node_server}}"],
               "path": ["api", "set-session"]
             },
-            "description": "Save user session in Redis"
+            "description": "Save user session in Redis - expects session object with id and optional expirySeconds"
           }
         },
         {
@@ -134,29 +147,16 @@
               "host": ["{{node_server}}"],
               "path": ["api", "session", "user123"]
             },
-            "description": "Get user session from Redis"
-          }
-        },
-        {
-          "name": "Test Redis",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{node_server}}/api/test-redis",
-              "host": ["{{node_server}}"],
-              "path": ["api", "test-redis"]
-            },
-            "description": "Test Redis connection"
+            "description": "Get user session from Redis by userId"
           }
         }
       ]
     },
     {
-      "name": "Controller Routes",
+      "name": "Redis Test (Upstash)",
       "item": [
         {
-          "name": "Test Controller",
+          "name": "Set Key-Value",
           "request": {
             "method": "POST",
             "header": [
@@ -167,14 +167,147 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"message\": \"Test controller request\",\n  \"data\": {\n    \"param1\": \"value1\",\n    \"param2\": \"value2\"\n  }\n}"
+              "raw": "{\n  \"key\": \"test-key\",\n  \"value\": \"test-value\"\n}"
             },
             "url": {
-              "raw": "{{node_server}}/api/test-controller",
+              "raw": "{{node_server}}/api/test/set",
               "host": ["{{node_server}}"],
-              "path": ["api", "test-controller"]
+              "path": ["api", "test", "set"]
             },
-            "description": "Test custom controller"
+            "description": "Test Upstash Redis - Set a key-value pair"
+          }
+        },
+        {
+          "name": "Get Key-Value",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/test/get?key=test-key",
+              "host": ["{{node_server}}"],
+              "path": ["api", "test", "get"],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "test-key",
+                  "description": "Key to retrieve"
+                }
+              ]
+            },
+            "description": "Test Upstash Redis - Get a value by key"
+          }
+        },
+        {
+          "name": "Delete Key-Value",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/test/delete?key=test-key",
+              "host": ["{{node_server}}"],
+              "path": ["api", "test", "delete"],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "test-key",
+                  "description": "Key to delete"
+                }
+              ]
+            },
+            "description": "Test Upstash Redis - Delete a key-value pair"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Redis Test (Mock)",
+      "item": [
+        {
+          "name": "Set Mock Key-Value",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"mock-test-key\",\n  \"value\": \"mock-test-value\"\n}"
+            },
+            "url": {
+              "raw": "{{node_server}}/api/test/mock/set",
+              "host": ["{{node_server}}"],
+              "path": ["api", "test", "mock", "set"]
+            },
+            "description": "Test Mock Redis - Set a key-value pair (in-memory store)"
+          }
+        },
+        {
+          "name": "Get Mock Key-Value",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/test/mock/get?key=mock-test-key",
+              "host": ["{{node_server}}"],
+              "path": ["api", "test", "mock", "get"],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "mock-test-key",
+                  "description": "Key to retrieve from mock store"
+                }
+              ]
+            },
+            "description": "Test Mock Redis - Get a value by key"
+          }
+        },
+        {
+          "name": "Delete Mock Key-Value",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/test/mock/delete?key=mock-test-key",
+              "host": ["{{node_server}}"],
+              "path": ["api", "test", "mock", "delete"],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "mock-test-key",
+                  "description": "Key to delete from mock store"
+                }
+              ]
+            },
+            "description": "Test Mock Redis - Delete a key-value pair"
+          }
+        },
+        {
+          "name": "List Mock Store",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/test/mock/list",
+              "host": ["{{node_server}}"],
+              "path": ["api", "test", "mock", "list"]
+            },
+            "description": "Test Mock Redis - List all entries in the mock store"
+          }
+        },
+        {
+          "name": "Clear Mock Store",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{node_server}}/api/test/mock/clear",
+              "host": ["{{node_server}}"],
+              "path": ["api", "test", "mock", "clear"]
+            },
+            "description": "Test Mock Redis - Clear all entries from the mock store"
           }
         }
       ]
@@ -217,7 +350,7 @@
                 {
                   "key": "userId",
                   "value": "user-123",
-                  "description": "User ID from auth session"
+                  "description": "User ID"
                 },
                 {
                   "key": "pageId",
@@ -242,7 +375,7 @@
                 {
                   "key": "userId",
                   "value": "user-123",
-                  "description": "User ID from auth session"
+                  "description": "User ID"
                 },
                 {
                   "key": "pageId",
@@ -264,7 +397,34 @@
               "host": ["{{node_server}}"],
               "path": ["api", "ai-pages", "user", "user-123"]
             },
-            "description": "Retrieve all AI generated pages for a specific user (Note: Pattern search not yet implemented for Upstash Redis)"
+            "description": "Retrieve all AI generated pages for a specific user"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Other Routes",
+      "item": [
+        {
+          "name": "Test Controller",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Test controller request\",\n  \"data\": {\n    \"param1\": \"value1\",\n    \"param2\": \"value2\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{node_server}}/api/test-controller",
+              "host": ["{{node_server}}"],
+              "path": ["api", "test-controller"]
+            },
+            "description": "Test custom controller - echoes back the request body"
           }
         }
       ]
@@ -291,7 +451,7 @@
               "host": ["{{node_server}}"],
               "path": ["stream", "sse"]
             },
-            "description": "Server-Sent Events stream endpoint"
+            "description": "Server-Sent Events stream endpoint - receives metric events every second"
           }
         }
       ]
